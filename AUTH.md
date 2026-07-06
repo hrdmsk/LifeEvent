@@ -8,9 +8,14 @@
 
 | プロバイダ | 状態 |
 |------------|------|
-| Google | 有効 |
+| Google | 有効・**実装済み**（`worker/src/auth.ts`） |
 | LINE | 無効（設計のみ・将来有効化） |
 | Discord | 無効（設計のみ・将来有効化） |
+
+実装メモ（Google）: Authorization Code + PKCE(S256)。`state`/verifier は署名付きCookieに保持。
+トークン交換後は Google の userinfo エンドポイントで sub/email/name を取得（id_token署名検証の代替）。
+セッションは Cookie に乱数、`sessions` テーブルには SHA-256 ハッシュを保存。
+エンドポイントは `/api/auth/google/login`・`/api/auth/google/callback`・`/api/auth/logout`・`/api/me`。
 
 - ランタイム: Cloudflare Workers (Hono)
 - ストレージ: Cloudflare D1
