@@ -1,34 +1,30 @@
-import { Hono } from "hono";
+import type { Hono } from "hono";
 import { Service } from "./service";
 import { UserStore } from "./users";
 import { D1Ledger } from "./ledger";
-import { NotFoundError, type Env } from "./types";
-import { indexHtml } from "./ui";
+import type { Env, Variables } from "./types";
+import { googleLogin, googleCallback, logout, requireAuth } from "./auth";
 
-export function registerRoutes(app: Hono<{ Bindings: Env }>): void {
+type App = Hono<{ Bindings: Env; Variables: Variables }>;
+
+export function registerRoutes(app: App): void {
   const service = (env: Env) =>
     new Service(new UserStore(env.DB), new D1Ledger(env.DB));
 
-  // ブラウザ向けのプレビュー画面
-  app.get("/", (c) => c.html(indexHtml));
+  // --- 認証 ---
+  app.get("/api/auth/google/login", googleLogin);
+  app.get("/api/auth/google/callback", googleCallback);
+  app.post("/api/auth/logout", logout);
 
-  // 動作確認用のヘルスチェック（JSON）
-  app.get("/healthz", (c) => c.json({ service: "lifeevent", status: "ok" }));
-
-  app.post("/users", async (c) => {
-    const body = await c.req.json<{ email?: string; display_name?: string }>();
-    if (!body.email || !body.display_name) {
-      return c.json({ error: "email and display_name are required" }, 400);
-    }
-    const user = await service(c.env).registerUser(body.email, body.display_name);
-    return c.json(user, 201);
+  // 現在のログインユーザー
+  app.get("/api/me", requireAuth, async (c) => {
+    const user = await new UserStore(c.env.DB).getUser(c.get("userId"));
+    if (!user) return c.json({ error: "not found" }, 404);
+    return c.json(user);
   });
 
-  app.post("/users/:id/events", async (c) => {
-    const id = Number(c.req.param("id"));
-    if (!Number.isInteger(id)) {
-      return c.json({ error: "invalid id" }, 400);
-    }
+  // ライフイベントを記録（ログインユーザー）
+  app.post("/api/me/events", requireAuth, async (c) => {
     const body = await c.req.json<{
       event_type?: string;
       title?: string;
@@ -38,29 +34,28 @@ export function registerRoutes(app: Hono<{ Bindings: Env }>): void {
     if (!body.title || !body.date) {
       return c.json({ error: "title and date are required" }, 400);
     }
-    try {
-      const ev = await service(c.env).recordEvent(
-        id,
-        body.event_type ?? "",
-        body.title,
-        body.memo ?? "",
-        body.date,
-      );
-      return c.json(ev, 201);
-    } catch (err) {
-      if (err instanceof NotFoundError) {
-        return c.json({ error: err.message }, 404);
-      }
-      throw err;
-    }
+    const ev = await service(c.env).recordEvent(
+      c.get("userId"),
+      body.event_type ?? "",
+      body.title,
+      body.memo ?? "",
+      body.date,
+    );
+    return c.json(ev, 201);
   });
 
-  app.get("/users/:id/timeline", async (c) => {
-    const id = Number(c.req.param("id"));
-    if (!Number.isInteger(id)) {
-      return c.json({ error: "invalid id" }, 400);
-    }
-    const timeline = await service(c.env).userTimeline(id);
+  // タイムライン（ログインユーザー、オンチェーン検証付き）
+  app.get("/api/me/timeline", requireAuth, async (c) => {
+    const timeline = await service(c.env).userTimeline(c.get("userId"));
     return c.json(timeline);
   });
+
+  // ヘルスチェック
+  app.get("/api/healthz", (c) => c.json({ service: "lifeevent", status: "ok" }));
+
+  // 未定義の /api/* は 404（SPAフォールバックに流さない）
+  app.all("/api/*", (c) => c.json({ error: "not found" }, 404));
+
+  // それ以外は React クライアント（静的アセット / SPAフォールバック）
+  app.all("*", (c) => c.env.ASSETS.fetch(c.req.raw));
 }

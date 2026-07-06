@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lifeevent",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-07-06",
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lifeevent",
+      "database_id": "4f5c66c1-7704-407b-a1f2-44695fa3cc21",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

@@ -125,6 +125,81 @@ export class UserStore {
       .all<EventRow>();
     return results.map(mapEvent);
   }
+
+  // --- 認証: identities / sessions ---
+
+  // プロバイダ連携からユーザーIDを引く。無ければ null。
+  async findUserIdByIdentity(
+    provider: string,
+    providerUserId: string,
+  ): Promise<number | null> {
+    const row = await this.db
+      .prepare(
+        "SELECT user_id FROM identities WHERE provider = ? AND provider_user_id = ?",
+      )
+      .bind(provider, providerUserId)
+      .first<{ user_id: number }>();
+    return row ? row.user_id : null;
+  }
+
+  // 新規ユーザーを作成し、プロバイダ連携を1件作る（サインアップ）。
+  async createUserWithIdentity(
+    provider: string,
+    providerUserId: string,
+    email: string,
+    displayName: string,
+  ): Promise<User> {
+    const createdAt = new Date().toISOString();
+    const res = await this.db
+      .prepare(
+        "INSERT INTO users (email, display_name, created_at) VALUES (?, ?, ?)",
+      )
+      .bind(email, displayName, createdAt)
+      .run();
+    const userId = Number(res.meta.last_row_id);
+    await this.db
+      .prepare(
+        `INSERT INTO identities (user_id, provider, provider_user_id, email, created_at)
+         VALUES (?, ?, ?, ?, ?)`,
+      )
+      .bind(userId, provider, providerUserId, email, createdAt)
+      .run();
+    return { id: userId, email, displayName, createdAt };
+  }
+
+  async createSession(
+    sessionIdHash: string,
+    userId: number,
+    expiresAt: string,
+  ): Promise<void> {
+    await this.db
+      .prepare(
+        "INSERT INTO sessions (id, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)",
+      )
+      .bind(sessionIdHash, userId, new Date().toISOString(), expiresAt)
+      .run();
+  }
+
+  // 有効な（期限内の）セッションからユーザーIDを引く。
+  async findUserIdBySession(
+    sessionIdHash: string,
+    nowIso: string,
+  ): Promise<number | null> {
+    const row = await this.db
+      .prepare(
+        "SELECT user_id FROM sessions WHERE id = ? AND expires_at > ?",
+      )
+      .bind(sessionIdHash, nowIso)
+      .first<{ user_id: number }>();
+    return row ? row.user_id : null;
+  }
+
+  async deleteSession(sessionIdHash: string): Promise<void> {
+    await this.db
+      .prepare("DELETE FROM sessions WHERE id = ?")
+      .bind(sessionIdHash)
+      .run();
+  }
 }
 
 function mapUser(row: UserRow): User {

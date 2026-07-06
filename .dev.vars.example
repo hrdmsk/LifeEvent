@@ -1,0 +1,7 @@
+# ローカル開発用のシークレット。コピーして .dev.vars を作り、実際の値を入れる。
+# .dev.vars は .gitignore 済み（コミットされない）。
+# 本番は `wrangler secret put <NAME>` で登録する。
+
+GOOGLE_CLIENT_ID="your-google-oauth-client-id"
+GOOGLE_CLIENT_SECRET="your-google-oauth-client-secret"
+SESSION_SECRET="change-me-to-a-long-random-string"
