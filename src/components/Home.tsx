@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import type { TimelineEntry, User } from "../types";
-import { getTimeline, logout } from "../api";
+import type { TimelineEntry } from "../types";
+import { getTimeline } from "../api";
+import { authClient } from "../authClient";
 import { EventForm } from "./EventForm";
 import { Timeline } from "./Timeline";
 
-export function Home({ user, onLogout }: { user: User; onLogout: () => void }) {
+export function Home({ userName }: { userName: string }) {
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
 
   const reload = useCallback(() => {
@@ -17,19 +18,17 @@ export function Home({ user, onLogout }: { user: User; onLogout: () => void }) {
     reload();
   }, [reload]);
 
-  async function handleLogout() {
-    await logout();
-    onLogout();
-  }
-
   return (
     <div className="container">
       <header className="header">
         <div>
           <h1>LifeEvent</h1>
-          <p className="muted">{user.displayName} さんの記録</p>
+          <p className="muted">{userName} さんの記録</p>
         </div>
-        <button className="button button-ghost" onClick={handleLogout}>
+        <button
+          className="button button-ghost"
+          onClick={() => authClient.signOut()}
+        >
           ログアウト
         </button>
       </header>

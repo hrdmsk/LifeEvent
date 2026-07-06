@@ -2,20 +2,13 @@
 export interface Env {
   DB: D1Database;
   ASSETS: Fetcher; // ビルドされた React クライアントの静的アセット
-  GOOGLE_CLIENT_ID: string;
-  GOOGLE_CLIENT_SECRET: string;
-  SESSION_SECRET: string; // OAuth トランザクション用の署名付きCookieに使用
+  BETTER_AUTH_URL: string; // 例: http://localhost:5173 / https://<domain>
+  BETTER_AUTH_SECRET: string; // Better Auth のセッション署名鍵
+  WORLDID_APP_ID: string; // World ID の app_id（OIDC client_id）
+  WORLDID_CLIENT_SECRET: string; // World ID の client secret
 }
 
-// Hono の Variables。認証ミドルウェアが現在のユーザーを載せる。
+// Hono の Variables。認証ミドルウェアが現在のユーザーIDを載せる（Better Auth の user.id = TEXT）。
 export interface Variables {
-  userId: number;
-}
-
-// ドメイン層の共通エラー。routes 側で HTTP ステータスへ変換する。
-export class NotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "NotFoundError";
-  }
+  userId: string;
 }

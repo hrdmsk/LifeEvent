@@ -1,13 +1,6 @@
-export interface User {
-  id: number;
-  email: string;
-  displayName: string;
-  createdAt: string;
-}
-
 export interface LifeEvent {
   id: number;
-  userId: number;
+  userId: string;
   eventType: string;
   title: string;
   memo: string;
@@ -19,7 +12,7 @@ export interface LifeEvent {
 
 export interface LedgerRecord {
   id: number;
-  userId: number;
+  userId: string;
   date: string;
   hash: string;
   createdAt: string;

@@ -1,67 +1,52 @@
-// UserStore と Ledger を束ねる業務ロジック層。
+// EventStore と Ledger を束ねる業務ロジック層。
 //
 // 記録フロー: life_events を pending 登録 → Ledger へ追記 →
 //   成功なら confirmed + record_id、失敗なら failed。
+// ユーザーは Better Auth のセッション由来（userId は user.id = TEXT）。
 
 import type { Ledger, LedgerRecord } from "./ledger";
-import {
-  StatusConfirmed,
-  UserStore,
-  type LifeEvent,
-  type User,
-} from "./users";
-import { NotFoundError } from "./types";
+import { EventStore, StatusConfirmed, type LifeEvent } from "./users";
 
 export interface TimelineEntry {
   event: LifeEvent;
-  onLedger: LedgerRecord | null; // 確定済みなら台帳の記録
-  verified: boolean; // life_events.date と台帳の date が一致するか
+  onLedger: LedgerRecord | null;
+  verified: boolean;
 }
 
 export class Service {
   constructor(
-    private readonly users: UserStore,
+    private readonly events: EventStore,
     private readonly ledger: Ledger,
   ) {}
 
-  registerUser(email: string, displayName: string): Promise<User> {
-    return this.users.createUser(email, displayName);
-  }
-
   async recordEvent(
-    userId: number,
+    userId: string,
     eventType: string,
     title: string,
     memo: string,
     date: string,
   ): Promise<LifeEvent> {
-    const user = await this.users.getUser(userId);
-    if (!user) {
-      throw new NotFoundError("user not found");
-    }
-
-    const ev = await this.users.createEvent(
+    const ev = await this.events.createEvent(
       userId,
       eventType,
       title,
       memo,
       date,
     );
-
     try {
       const record = await this.ledger.append(userId, date);
-      await this.users.markConfirmed(ev.id, record.id);
+      await this.events.markConfirmed(ev.id, record.id);
       ev.recordId = record.id;
       ev.status = StatusConfirmed;
       return ev;
     } catch (err) {
-      await this.users.markFailed(ev.id);
+      await this.events.markFailed(ev.id);
       throw err;
     }
   }
 
-  async userTimeline(userId: number): Promise<TimelineEntry[]> {
-    const events = await this.users.eventsByUser(userId);
+  async userTimeline(userId: string): Promise<TimelineEntry[]> {
+    const events = await this.events.eventsByUser(userId);
     const out: TimelineEntry[] = [];
     for (const event of events) {
       let onLedger: LedgerRecord | null = null;

@@ -1,26 +1,42 @@
 import type { Hono } from "hono";
+import { createMiddleware } from "hono/factory";
 import { Service } from "./service";
-import { UserStore } from "./users";
+import { EventStore } from "./users";
 import { D1Ledger } from "./ledger";
 import type { Env, Variables } from "./types";
-import { googleLogin, googleCallback, logout, requireAuth } from "./auth";
+import { createAuth } from "./auth";
 
 type App = Hono<{ Bindings: Env; Variables: Variables }>;
 
+// Better Auth のセッションから userId を解決するミドルウェア。未ログインは401。
+const requireAuth = createMiddleware<{ Bindings: Env; Variables: Variables }>(
+  async (c, next) => {
+    const auth = createAuth(c.env);
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    if (!session) {
+      return c.json({ error: "unauthorized" }, 401);
+    }
+    c.set("userId", session.user.id);
+    await next();
+  },
+);
+
 export function registerRoutes(app: App): void {
   const service = (env: Env) =>
-    new Service(new UserStore(env.DB), new D1Ledger(env.DB));
+    new Service(new EventStore(env.DB), new D1Ledger(env.DB));
 
-  // --- 認証 ---
-  app.get("/api/auth/google/login", googleLogin);
-  app.get("/api/auth/google/callback", googleCallback);
-  app.post("/api/auth/logout", logout);
+  // Better Auth のエンドポイント（/api/auth/*）
+  app.on(["GET", "POST"], "/api/auth/*", (c) =>
+    createAuth(c.env).handler(c.req.raw),
+  );
 
   // 現在のログインユーザー
-  app.get("/api/me", requireAuth, async (c) => {
-    const user = await new UserStore(c.env.DB).getUser(c.get("userId"));
-    if (!user) return c.json({ error: "not found" }, 404);
-    return c.json(user);
+  app.get("/api/me", async (c) => {
+    const session = await createAuth(c.env).api.getSession({
+      headers: c.req.raw.headers,
+    });
+    if (!session) return c.json({ error: "unauthorized" }, 401);
+    return c.json(session.user);
   });
 
   // ライフイベントを記録（ログインユーザー）
@@ -44,7 +60,7 @@ export function registerRoutes(app: App): void {
     return c.json(ev, 201);
   });
 
-  // タイムライン（ログインユーザー、オンチェーン検証付き）
+  // タイムライン（ログインユーザー、台帳検証付き）
   app.get("/api/me/timeline", requireAuth, async (c) => {
     const timeline = await service(c.env).userTimeline(c.get("userId"));
     return c.json(timeline);

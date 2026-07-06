@@ -1,7 +1,10 @@
 # ローカル開発用のシークレット。コピーして .dev.vars を作り、実際の値を入れる。
-# .dev.vars は .gitignore 済み（コミットされない）。
-# 本番は `wrangler secret put <NAME>` で登録する。
+# .dev.vars は .gitignore 済み（コミットされない）。本番は `wrangler secret put <NAME>`。
 
-GOOGLE_CLIENT_ID="your-google-oauth-client-id"
-GOOGLE_CLIENT_SECRET="your-google-oauth-client-secret"
-SESSION_SECRET="change-me-to-a-long-random-string"
+# Better Auth
+BETTER_AUTH_URL="http://localhost:5173"
+BETTER_AUTH_SECRET="change-me-to-a-long-random-string"
+
+# World ID（World ID Developer Portal のアプリから取得）
+WORLDID_APP_ID="app_xxxxxxxxxxxxxxxx"
+WORLDID_CLIENT_SECRET="your-world-id-client-secret"

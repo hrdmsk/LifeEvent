@@ -1,5 +1,16 @@
 # LifeEvent 認証設計
 
+> **現状の実装（2026-07 更新）**: 認証は **Better Auth** を採用し、**World ID**（Sign in with World ID / OIDC）を
+> Generic OAuth プラグインで接続している（`worker/src/auth.ts`）。検証レベルは Device 相当。
+> World ID はメールを返さないため `sub` から合成メール（`<sub>@worldid.local`）を割り当てる。
+> ユーザー/セッションは Better Auth のスキーマ（`user`/`session`/`account`/`verification`、id は TEXT）で管理し、
+> `life_events`/`records` は `user.id`(TEXT) を参照する。エンドポイントは `/api/auth/*`。
+> 以下 Google/LINE/Discord に関する記述は初期設計の記録（現在は未使用）。実装の詳細は [CLAUDE.md](CLAUDE.md) を参照。
+
+---
+
+# LifeEvent 認証設計（初期設計の記録）
+
 ソーシャルログインでアカウント作成・ログインを行う設計。
 対象プロバイダは **Google / LINE / Discord** の3種（いずれも無料）で、同じ枠組み（`identities` テーブル）で扱う。
 

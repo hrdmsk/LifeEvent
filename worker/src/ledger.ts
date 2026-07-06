@@ -1,28 +1,24 @@
 // 日付の追記専用台帳（records テーブル）を抽象化する。
-//
 // 現在は D1 の records テーブルを使う実装。将来、外部の改ざん耐性ストレージへ
 // 差し替えても Service 以上のコードは変更不要にするための境界。
 
 export interface LedgerRecord {
   id: number;
-  userId: number;
+  userId: string;
   date: string;
   hash: string;
   createdAt: string;
 }
 
 export interface Ledger {
-  // 日付を1件追記して確定した記録を返す。
-  append(userId: number, date: string): Promise<LedgerRecord>;
-  // id の1件を取得する。無ければ null。
+  append(userId: string, date: string): Promise<LedgerRecord>;
   get(id: number): Promise<LedgerRecord | null>;
-  // ユーザーの全記録を追記順で返す。
-  listByUser(userId: number): Promise<LedgerRecord[]>;
+  listByUser(userId: string): Promise<LedgerRecord[]>;
 }
 
 interface RecordRow {
   id: number;
-  user_id: number;
+  user_id: string;
   date: string;
   hash: string;
   created_at: string;
@@ -32,7 +28,7 @@ interface RecordRow {
 export class D1Ledger implements Ledger {
   constructor(private readonly db: D1Database) {}
 
-  async append(userId: number, date: string): Promise<LedgerRecord> {
+  async append(userId: string, date: string): Promise<LedgerRecord> {
     const createdAt = new Date().toISOString();
     const hash = await computeHash(userId, date);
     const res = await this.db
@@ -60,7 +56,7 @@ export class D1Ledger implements Ledger {
     return row ? mapRecord(row) : null;
   }
 
-  async listByUser(userId: number): Promise<LedgerRecord[]> {
+  async listByUser(userId: string): Promise<LedgerRecord[]> {
     const { results } = await this.db
       .prepare(
         "SELECT id, user_id, date, hash, created_at FROM records WHERE user_id = ? ORDER BY id",
@@ -82,7 +78,7 @@ function mapRecord(row: RecordRow): LedgerRecord {
 }
 
 // user_id と date から SHA-256 の整合性ハッシュを算出する。
-export async function computeHash(userId: number, date: string): Promise<string> {
+export async function computeHash(userId: string, date: string): Promise<string> {
   const data = new TextEncoder().encode(`${userId}:${date}`);
   const digest = await crypto.subtle.digest("SHA-256", data);
   return [...new Uint8Array(digest)]
