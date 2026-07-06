@@ -1,0 +1,9 @@
+name = "lifeevent"
+main = "src/index.ts"
+compatibility_date = "2026-07-06"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lifeevent"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+migrations_dir = "migrations"
