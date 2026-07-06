@@ -3,12 +3,17 @@ import { Service } from "./service";
 import { UserStore } from "./users";
 import { D1Ledger } from "./ledger";
 import { NotFoundError, type Env } from "./types";
+import { indexHtml } from "./ui";
 
 export function registerRoutes(app: Hono<{ Bindings: Env }>): void {
   const service = (env: Env) =>
     new Service(new UserStore(env.DB), new D1Ledger(env.DB));
 
-  app.get("/", (c) => c.json({ service: "lifeevent", status: "ok" }));
+  // ブラウザ向けのプレビュー画面
+  app.get("/", (c) => c.html(indexHtml));
+
+  // 動作確認用のヘルスチェック（JSON）
+  app.get("/healthz", (c) => c.json({ service: "lifeevent", status: "ok" }));
 
   app.post("/users", async (c) => {
     const body = await c.req.json<{ email?: string; display_name?: string }>();
