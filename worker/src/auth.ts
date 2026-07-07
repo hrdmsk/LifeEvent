@@ -13,7 +13,7 @@ import type { Env } from "./types";
 export function createAuth(env: Env) {
   return betterAuth({
     database: {
-      dialect: new D1Dialect({ database: env.DB }),
+      dialect: new D1Dialect({ database: env.AUTH_DB }),
       type: "sqlite",
     },
     baseURL: env.BETTER_AUTH_URL,

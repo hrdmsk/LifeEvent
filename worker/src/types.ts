@@ -1,6 +1,7 @@
 // Cloudflare Workers の環境バインディング。
 export interface Env {
-  DB: D1Database;
+  AUTH_DB: D1Database; // 認証DB（Better Auth: user/session/account/verification）
+  APP_DB: D1Database; // アプリDB（life_events / records）
   ASSETS: Fetcher; // ビルドされた React クライアントの静的アセット
   BETTER_AUTH_URL: string; // 例: http://localhost:5173 / https://<domain>
   BETTER_AUTH_SECRET: string; // Better Auth のセッション署名鍵

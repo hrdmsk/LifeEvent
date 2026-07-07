@@ -5,10 +5,18 @@ const COMING_SOON = ["Google", "LINE", "Discord"];
 
 export function LoginScreen() {
   async function signIn() {
-    await authClient.signIn.oauth2({
+    const { data, error } = await authClient.signIn.oauth2({
       providerId: "worldid",
       callbackURL: "/",
     });
+    if (error) {
+      alert(`ログイン開始に失敗しました: ${error.message ?? error.statusText ?? ""}`);
+      return;
+    }
+    // 自動リダイレクトされない場合に備え、返ってきたURLへ明示的に遷移する
+    if (data && "url" in data && typeof data.url === "string") {
+      window.location.href = data.url;
+    }
   }
 
   return (

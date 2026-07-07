@@ -1,10 +1,55 @@
-# ローカル開発用のシークレット。コピーして .dev.vars を作り、実際の値を入れる。
-# .dev.vars は .gitignore 済み（コミットされない）。本番は `wrangler secret put <NAME>`。
+# ============================================================
+# LifeEvent シークレット サンプル
+# ------------------------------------------------------------
+# 使い方:
+#   - ローカル: このファイルを .dev.vars にコピーして実値を入れる（.dev.vars は .gitignore 済み）
+#   - 本番:     `npx wrangler secret put <NAME>` で1つずつ登録
+# 各プロバイダの Better Auth コールバックURL（リダイレクトURIに登録する値）:
+#   {BETTER_AUTH_URL}/api/auth/oauth2/callback/<providerId>
+#   例(本番): https://lifeevent.4y4app.workers.dev/api/auth/oauth2/callback/worldid
+#   例(ローカル): http://localhost:5173/api/auth/oauth2/callback/worldid
+# ============================================================
 
-# Better Auth
+# --- Better Auth 本体（必須） ---
+# BETTER_AUTH_URL は環境ごとに変える:
+#   ローカル → http://localhost:5173 / 本番 → https://lifeevent.4y4app.workers.dev
 BETTER_AUTH_URL="http://localhost:5173"
+# 長いランダム文字列。生成: node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 BETTER_AUTH_SECRET="change-me-to-a-long-random-string"
 
-# World ID（World ID Developer Portal のアプリから取得）
+# ============================================================
+# 有効なプロバイダ
+# ============================================================
+
+# --- World ID（現役 / providerId: worldid） ---
+# World ID Developer Portal でアプリを作成し「Sign in with World ID」を有効化して取得。
+# 検証レベルは Device 相当。
 WORLDID_APP_ID="app_xxxxxxxxxxxxxxxx"
 WORLDID_CLIENT_SECRET="your-world-id-client-secret"
+
+# ============================================================
+# 将来有効化するプロバイダ（現在は未使用・雛形）
+# 有効化する時は下記のコメントを外して実値を入れ、
+# worker/src/auth.ts の genericOAuth config に該当プロバイダを追加する。
+# ============================================================
+
+# --- Google（providerId: google） ---
+# Google Cloud Console → OAuth 2.0 クライアントID（Webアプリ）で取得。
+# discoveryUrl: https://accounts.google.com/.well-known/openid-configuration
+# GOOGLE_CLIENT_ID="xxxxxxxx.apps.googleusercontent.com"
+# GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# --- LINE Login（providerId: line） ---
+# LINE Developers で Provider 作成 → LINE Login チャネル作成。
+# CLIENT_ID = チャネルID / CLIENT_SECRET = チャネルシークレット。
+# discoveryUrl: https://access.line.me/.well-known/openid-configuration
+# メールアドレス取得にはコンソールで「メールアドレス取得権限」の申請が必要。
+# LINE_CLIENT_ID="1234567890"
+# LINE_CLIENT_SECRET="your-line-channel-secret"
+
+# --- Discord（providerId: discord） ---
+# Discord Developer Portal → New Application → OAuth2 で取得。
+# Discord は OIDC ではないため endpoints を手動指定（authorize/token/userInfo）。
+# scope: identify email
+# DISCORD_CLIENT_ID="000000000000000000"
+# DISCORD_CLIENT_SECRET="your-discord-client-secret"

@@ -1,14 +1,6 @@
--- 自前認証（Google手書き）から Better Auth へ移行する。
--- 旧テーブルを撤去し、Better Auth のスキーマを導入。
--- アプリのイベント/台帳は user(id=TEXT) を参照する形に張り替える（初期段階のためデータはリセット）。
+-- 認証DB（AUTH_DB）: Better Auth のスキーマ。
+-- @better-auth/cli generate の出力に準拠。
 
-DROP TABLE IF EXISTS identities;
-DROP TABLE IF EXISTS sessions;
-DROP TABLE IF EXISTS life_events;
-DROP TABLE IF EXISTS records;
-DROP TABLE IF EXISTS users;
-
--- === Better Auth スキーマ（@better-auth/cli generate 出力） ===
 CREATE TABLE "user" (
     "id" text NOT NULL PRIMARY KEY,
     "name" text NOT NULL,
@@ -58,26 +50,3 @@ CREATE TABLE "verification" (
 CREATE INDEX "session_userId_idx" ON "session" ("userId");
 CREATE INDEX "account_userId_idx" ON "account" ("userId");
 CREATE INDEX "verification_identifier_idx" ON "verification" ("identifier");
-
--- === アプリスキーマ（user_id を TEXT に） ===
-CREATE TABLE life_events (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id    TEXT    NOT NULL REFERENCES "user"("id"),
-    event_type TEXT    NOT NULL,
-    title      TEXT    NOT NULL,
-    memo       TEXT    NOT NULL DEFAULT '',
-    date       TEXT    NOT NULL,
-    record_id  INTEGER,
-    status     TEXT    NOT NULL,
-    created_at TEXT    NOT NULL
-);
-CREATE INDEX idx_events_user ON life_events(user_id);
-
-CREATE TABLE records (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id    TEXT    NOT NULL REFERENCES "user"("id"),
-    date       TEXT    NOT NULL,
-    hash       TEXT    NOT NULL,
-    created_at TEXT    NOT NULL
-);
-CREATE INDEX idx_records_user ON records(user_id);

@@ -23,7 +23,7 @@ const requireAuth = createMiddleware<{ Bindings: Env; Variables: Variables }>(
 
 export function registerRoutes(app: App): void {
   const service = (env: Env) =>
-    new Service(new EventStore(env.DB), new D1Ledger(env.DB));
+    new Service(new EventStore(env.APP_DB), new D1Ledger(env.APP_DB));
 
   // Better Auth のエンドポイント（/api/auth/*）
   app.on(["GET", "POST"], "/api/auth/*", (c) =>

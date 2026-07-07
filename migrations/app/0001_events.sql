@@ -1,15 +1,10 @@
--- users: account info
-CREATE TABLE users (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    email        TEXT    NOT NULL UNIQUE,
-    display_name TEXT    NOT NULL,
-    created_at   TEXT    NOT NULL
-);
+-- アプリDB（APP_DB）: ライフイベント（時間）とメモ、および日付の追記台帳。
+-- 認証DBとは別データベースのため、user への外部キーは張れない。
+-- user_id は AUTH_DB の user.id（TEXT）を指すソフト参照。
 
--- life_events: event metadata (kept off the ledger)
 CREATE TABLE life_events (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id    INTEGER NOT NULL REFERENCES users(id),
+    user_id    TEXT    NOT NULL,          -- AUTH_DB の user.id を指す（FKなし）
     event_type TEXT    NOT NULL,
     title      TEXT    NOT NULL,
     memo       TEXT    NOT NULL DEFAULT '',
@@ -20,10 +15,9 @@ CREATE TABLE life_events (
 );
 CREATE INDEX idx_events_user ON life_events(user_id);
 
--- records: append-only date ledger (INSERT only by convention)
 CREATE TABLE records (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id    INTEGER NOT NULL REFERENCES users(id),
+    user_id    TEXT    NOT NULL,
     date       TEXT    NOT NULL,
     hash       TEXT    NOT NULL,
     created_at TEXT    NOT NULL

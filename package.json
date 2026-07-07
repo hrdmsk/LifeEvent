@@ -8,8 +8,8 @@
     "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.worker.json && tsc -p tsconfig.node.json",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
-    "migrate:local": "wrangler d1 migrations apply lifeevent --local",
-    "migrate:remote": "wrangler d1 migrations apply lifeevent --remote"
+    "migrate:local": "wrangler d1 migrations apply lifeevent-auth --local && wrangler d1 migrations apply lifeevent-app --local",
+    "migrate:remote": "wrangler d1 migrations apply lifeevent-auth --remote && wrangler d1 migrations apply lifeevent-app --remote"
   },
   "dependencies": {
     "better-auth": "^1.6.23",
