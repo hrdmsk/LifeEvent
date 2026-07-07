@@ -11,14 +11,14 @@
   "d1_databases": [
     {
       "binding": "AUTH_DB",
-      "database_name": "lifeevent-auth",
+      "database_name": "lifeevent_auth",
       "database_id": "4b2996a6-b467-400e-b3ff-d6b40ff13600",
       "migrations_dir": "migrations/auth"
     },
     {
       "binding": "APP_DB",
-      "database_name": "lifeevent-app",
-      "database_id": "4f5c66c1-7704-407b-a1f2-44695fa3cc21",
+      "database_name": "lifeevent_app",
+      "database_id": "c1b00175-c3e9-455b-a385-97d9d1a2f771",
       "migrations_dir": "migrations/app"
     }
   ]

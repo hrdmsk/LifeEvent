@@ -8,8 +8,8 @@
     "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.worker.json && tsc -p tsconfig.node.json",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
-    "migrate:local": "wrangler d1 migrations apply lifeevent-auth --local && wrangler d1 migrations apply lifeevent-app --local",
-    "migrate:remote": "wrangler d1 migrations apply lifeevent-auth --remote && wrangler d1 migrations apply lifeevent-app --remote"
+    "migrate:local": "wrangler d1 migrations apply lifeevent_auth --local && wrangler d1 migrations apply lifeevent_app --local",
+    "migrate:remote": "wrangler d1 migrations apply lifeevent_auth --remote && wrangler d1 migrations apply lifeevent_app --remote"
   },
   "dependencies": {
     "better-auth": "^1.6.23",
@@ -17,7 +17,8 @@
     "kysely": "^0.29.3",
     "kysely-d1": "^0.4.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.0.0",

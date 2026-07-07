@@ -1,19 +1,31 @@
+import { Routes, Route, Navigate } from "react-router-dom";
 import { authClient } from "./authClient";
-import { LoginScreen } from "./components/LoginScreen";
-import { Home } from "./components/Home";
+import { NavBar } from "./components/NavBar";
+import { AnniversariesPage } from "./pages/AnniversariesPage";
+import { LoginPage } from "./pages/LoginPage";
+import { HomePage } from "./pages/HomePage";
 
 export function App() {
-  const { data: session, isPending } = authClient.useSession();
+  const { isPending } = authClient.useSession();
 
-  if (isPending) {
-    return (
-      <div className="container">
-        <p className="muted">読み込み中…</p>
-      </div>
-    );
-  }
-  if (!session) {
-    return <LoginScreen />;
-  }
-  return <Home userName={session.user.name} />;
+  return (
+    <>
+      <NavBar />
+      {isPending ? (
+        <div className="container">
+          <p className="muted">読み込み中…</p>
+        </div>
+      ) : (
+        <Routes>
+          {/* 記念日の登録ページ（公開・認証不要） */}
+          <Route path="/" element={<AnniversariesPage />} />
+          {/* 認証ページ */}
+          <Route path="/login" element={<LoginPage />} />
+          {/* 個人タイムライン（要ログイン） */}
+          <Route path="/me" element={<HomePage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      )}
+    </>
+  );
 }

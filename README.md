@@ -16,6 +16,14 @@
 - ライフイベントの登録とタイムライン表示
 - 日付は追記専用の台帳（`records`）に保存し、登録内容と突き合わせて整合性を検証
 
+## 画面（ページ）
+
+| パス | ページ | 認証 |
+|------|--------|------|
+| `/` | 記念日の登録（みんなの記念日・公開） | 不要 |
+| `/login` | 認証ページ（World IDログイン） | — |
+| `/me` | マイページ（個人タイムライン） | 要ログイン |
+
 ## プロジェクト構成
 
 ```
@@ -23,9 +31,10 @@
 ├── vite.config.ts        React + Cloudflare プラグイン
 ├── wrangler.jsonc        Worker / D1 / 静的アセット設定（nodejs_compat）
 ├── auth.config.ts        Better Auth CLI（スキーマ生成）専用
-├── src/                  React フロントエンド（TSX）
+├── src/                  React フロントエンド（TSX, react-router）
 │   ├── App.tsx / main.tsx / authClient.ts / api.ts
-│   └── components/       LoginScreen / Home / EventForm / Timeline
+│   ├── pages/            AnniversariesPage(/) / LoginPage(/login) / HomePage(/me)
+│   └── components/       NavBar / PublicAnniversaries / Home / EventForm / Timeline
 ├── worker/src/           Cloudflare Worker（Hono）
 │   ├── index.ts / routes.ts
 │   ├── auth.ts           Better Auth + World ID
@@ -80,8 +89,8 @@ npm run deploy   # = vite build && wrangler deploy
 初回は **2つの本番D1を作成**して `wrangler.jsonc` の各 `database_id` を設定する。
 
 ```bash
-npx wrangler d1 create lifeevent-auth   # → AUTH_DB の database_id
-npx wrangler d1 create lifeevent-app    # → APP_DB の database_id
+npx wrangler d1 create lifeevent_auth   # → AUTH_DB の database_id
+npx wrangler d1 create lifeevent_app    # → APP_DB の database_id
 ```
 
 その後、本番D1へのマイグレーション（`npm run migrate:remote`）、シークレット登録
