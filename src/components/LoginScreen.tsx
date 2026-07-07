@@ -1,4 +1,5 @@
 import { authClient } from "../authClient";
+import { PublicAnniversaries } from "./PublicAnniversaries";
 
 // 準備中（無効表示）のプロバイダ。将来 Better Auth に追加したら有効化する。
 const COMING_SOON = ["Google", "LINE", "Discord"];
@@ -20,7 +21,7 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="container login">
+    <div className="container">
       <div className="card login-card">
         <h1>LifeEvent</h1>
         <p className="muted lead">人生の出来事を記録して、時系列で振り返る。</p>
@@ -37,8 +38,12 @@ export function LoginScreen() {
           </button>
         ))}
 
-        <p className="fineprint">World ID はスマホの World App で認証します。</p>
+        <p className="fineprint">
+          ログインすると自分専用のタイムラインを記録できます。
+        </p>
       </div>
+
+      <PublicAnniversaries />
     </div>
   );
 }

@@ -69,6 +69,7 @@ World ID の実ログインを動かすには、World ID Developer Portal でア
 | GET | `/api/me` | ログインユーザー情報（未ログインは401） |
 | POST | `/api/me/events` | ライフイベントを記録 |
 | GET | `/api/me/timeline` | タイムライン取得（検証付き） |
+| GET/POST | `/api/public/anniversaries` | 認証なしで登録・閲覧できる公開記念日 |
 
 ## デプロイ
 

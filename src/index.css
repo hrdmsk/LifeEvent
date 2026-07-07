@@ -165,7 +165,10 @@ textarea {
 .login-card {
   width: min(100%, 24rem);
   text-align: center;
-  margin-bottom: 0;
+  margin: 0 auto 2rem;
+}
+.anniversary-list {
+  margin-top: 1.5rem;
 }
 .login-card .button {
   width: 100%;
