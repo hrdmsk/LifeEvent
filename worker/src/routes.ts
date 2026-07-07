@@ -1,8 +1,9 @@
 import type { Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { Service } from "./service";
-import { EventStore } from "./users";
+import { EventStore, sanitizeStyle } from "./users";
 import { D1Ledger } from "./ledger";
+import { TokenStore } from "./tokens";
 import type { Env, Variables } from "./types";
 import { createAuth } from "./auth";
 
@@ -81,10 +82,64 @@ export function registerRoutes(app: App): void {
     return c.json(timeline);
   });
 
+  // --- アカウントが保持する Token ID（UUID）のコレクション ---
+
+  // 保存一覧
+  app.get("/api/me/tokens", requireAuth, async (c) => {
+    const tokens = await new TokenStore(c.env.APP_DB).list(c.get("userId"));
+    return c.json(tokens);
+  });
+
+  // 記念日の UUID をアカウントに保存
+  app.post("/api/me/tokens", requireAuth, async (c) => {
+    const body = await c.req.json<{ uuid?: string }>();
+    if (!body.uuid) {
+      return c.json({ error: "uuid is required" }, 400);
+    }
+    const store = new TokenStore(c.env.APP_DB);
+    if (!(await store.eventExists(body.uuid))) {
+      return c.json({ error: "その記念日が見つかりません" }, 404);
+    }
+    await store.save(c.get("userId"), body.uuid);
+    return c.json({ ok: true }, 201);
+  });
+
+  // 保存解除
+  app.delete("/api/me/tokens/:uuid", requireAuth, async (c) => {
+    await new TokenStore(c.env.APP_DB).remove(
+      c.get("userId"),
+      c.req.param("uuid"),
+    );
+    return c.json({ ok: true });
+  });
+
+  // 記念日の専用ページのデザイン更新（所有者のみ）
+  app.put("/api/me/anniversaries/:uuid/style", requireAuth, async (c) => {
+    const style = sanitizeStyle(await c.req.json().catch(() => ({})));
+    const ok = await new EventStore(c.env.APP_DB).updateStyle(
+      c.req.param("uuid"),
+      c.get("userId"),
+      style,
+    );
+    if (!ok) {
+      return c.json({ error: "自分の記念日のみ編集できます" }, 403);
+    }
+    return c.json({ ok: true, style });
+  });
+
   // --- みんなの記念日（認証なし・公開） ---
   app.get("/api/public/anniversaries", async (c) => {
     const timeline = await service(c.env).userTimeline(PUBLIC_USER_ID);
     return c.json(timeline);
+  });
+
+  // 記念日1件を UUID で取得（専用ページ用・公開）
+  app.get("/api/public/anniversaries/:uuid", async (c) => {
+    const ev = await new EventStore(c.env.APP_DB).getByUuid(
+      c.req.param("uuid"),
+    );
+    if (!ev) return c.json({ error: "not found" }, 404);
+    return c.json(ev);
   });
 
   app.post("/api/public/anniversaries", async (c) => {

@@ -216,6 +216,66 @@ textarea {
 .anniversary-list {
   margin-top: 1.5rem;
 }
+
+/* Token ID（UUID）表示 */
+.token-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+.token-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  word-break: break-all;
+}
+.detail-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+/* 記念日 専用ページの経過表示 */
+.anniversary-detail h1 {
+  margin: 0.25rem 0 0.5rem;
+}
+.elapsed {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.elapsed-days {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.elapsed-days .big {
+  font-size: clamp(3rem, 12vw, 5rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+.elapsed-days .unit {
+  font-size: 1.5rem;
+  color: var(--muted);
+}
+.elapsed-clock {
+  margin-top: 0.75rem;
+  font-size: 1.1rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
 .login-card .button {
   width: 100%;
 }

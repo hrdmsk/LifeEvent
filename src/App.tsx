@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { authClient } from "./authClient";
 import { NavBar } from "./components/NavBar";
 import { AnniversariesPage } from "./pages/AnniversariesPage";
+import { AnniversaryPage } from "./pages/AnniversaryPage";
 import { LoginPage } from "./pages/LoginPage";
 import { HomePage } from "./pages/HomePage";
 
@@ -19,6 +20,8 @@ export function App() {
         <Routes>
           {/* 記念日の登録ページ（公開・認証不要） */}
           <Route path="/" element={<AnniversariesPage />} />
+          {/* 記念日の専用ページ（経過表示・公開） */}
+          <Route path="/a/:uuid" element={<AnniversaryPage />} />
           {/* 認証ページ */}
           <Route path="/login" element={<LoginPage />} />
           {/* 個人タイムライン（要ログイン） */}

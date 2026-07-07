@@ -2,17 +2,35 @@
 
 人生の出来事（ライフイベント）を記録するWebサービス。
 
-ユーザーが **World ID** でログインし、「いつ・何があったか」を登録すると、あとから時系列（タイムライン）で振り返れる。
+ユーザーが OIDC でログインし、「いつ・何があったか」を登録すると、あとから時系列（タイムライン）で振り返れる。
 
 - フロントエンド: **React (TSX) + Vite**
 - バックエンド: **Cloudflare Workers (Hono)**
-- 認証: **Better Auth**（Generic OAuth で World ID を OIDC 接続）
+- 認証: **Better Auth**（Generic OAuth による OIDC ログイン。プロバイダは差し替え可能で、現状は一例として World ID を接続）
 - ストレージ: **Cloudflare D1**（SQLite互換）
 - フロントとWorkerは `@cloudflare/vite-plugin` で1つのdev/ビルドに統合（同一オリジン）
 
+## ビジョン（このプロジェクトの原点）
+
+**Life プロジェクト** — 記念日と、30文字までのコメントだけを残せるブロックチェーンサービス。
+
+一度登録すると、**ブロックチェーンのトークンID**をもとに、そのコメントと「記念日とした日付」を見られる。
+
+ただ、それだけだと物寂しい。だからトークンIDを起点に、
+
+- その **記念日** と **コメント** をもとに、**自分でデザインした Web ページ**を設けたり
+- **専用の時計のようなハードデバイス**を作ったり
+
+——というように、**誰もが参入しやすいシステム**にしたい。
+その **起点（プラットフォーム）を自分の手で作る** のが、このプロジェクトの目的。
+
+> 現在の実装（World ID + Cloudflare D1）は、将来のブロックチェーン（SBT）移行を見据えた土台。
+> 各記念日に付与している **UUID は、そのトークンIDの代替**であり、上記の「起点」に相当する。
+> `/a/:uuid` の専用ページは「トークンIDから記念日・コメントを表示する」最小形。
+
 ## 特徴
 
-- World ID でログイン（Sign in with World ID / OIDC）
+- OIDC でログイン（Better Auth / Generic OAuth。現状は World ID を接続、他プロバイダも追加可能）
 - ライフイベントの登録とタイムライン表示
 - 日付は追記専用の台帳（`records`）に保存し、登録内容と突き合わせて整合性を検証
 
@@ -21,8 +39,9 @@
 | パス | ページ | 認証 |
 |------|--------|------|
 | `/` | 記念日の登録（みんなの記念日・公開） | 不要 |
+| `/a/:uuid` | 記念日の専用ページ（その日からの経過をライブ表示） | 不要 |
 | `/login` | 認証ページ（World IDログイン） | — |
-| `/me` | マイページ（個人タイムライン） | 要ログイン |
+| `/me` | マイページ（個人タイムライン＋保存したToken） | 要ログイン |
 
 ## プロジェクト構成
 
@@ -50,8 +69,9 @@
 | DB（バインディング） | テーブル | 役割 |
 |----------------------|----------|------|
 | 認証 `AUTH_DB`（lifeevent-auth） | `user` / `session` / `account` / `verification` | Better Auth が管理 |
-| アプリ `APP_DB`（lifeevent-app） | `life_events` | ライフイベント（時間・種別・タイトル・メモ） |
-| アプリ `APP_DB`（lifeevent-app） | `records` | 日付の追記専用台帳（INSERTのみ） |
+| アプリ `APP_DB`（lifeevent_app） | `life_events` | ライフイベント（時間・種別・タイトル・メモ、`uuid`=Token ID代替） |
+| アプリ `APP_DB`（lifeevent_app） | `records` | 日付の追記専用台帳（INSERTのみ） |
+| アプリ `APP_DB`（lifeevent_app） | `saved_tokens` | アカウントが保持する Token ID(UUID) のコレクション |
 
 マイグレーションも DB ごと（`migrations/auth/` と `migrations/app/`）。
 
@@ -79,6 +99,9 @@ World ID の実ログインを動かすには、World ID Developer Portal でア
 | POST | `/api/me/events` | ライフイベントを記録 |
 | GET | `/api/me/timeline` | タイムライン取得（検証付き） |
 | GET/POST | `/api/public/anniversaries` | 認証なしで登録・閲覧できる公開記念日 |
+| GET | `/api/public/anniversaries/:uuid` | 記念日1件（専用ページ用・公開） |
+| GET/POST/DELETE | `/api/me/tokens` | 保持するToken ID(UUID)の一覧・保存・解除 |
+| PUT | `/api/me/anniversaries/:uuid/style` | 専用ページのデザイン更新（所有者のみ） |
 
 ## デプロイ
 

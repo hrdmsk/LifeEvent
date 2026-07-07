@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { Link } from "react-router-dom";
 import type { TimelineEntry } from "../types";
-import { addPublicAnniversary, getPublicAnniversaries } from "../api";
+import { addPublicAnniversary, getPublicAnniversaries, saveToken } from "../api";
+import { authClient } from "../authClient";
 
 // 認証なしで誰でも登録・閲覧できる「みんなの記念日」。
 export function PublicAnniversaries() {
+  const { data: session } = authClient.useSession();
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
   const [date, setDate] = useState("");
   const [title, setTitle] = useState("");
@@ -34,6 +37,15 @@ export function PublicAnniversaries() {
       alert(err instanceof Error ? err.message : "登録に失敗しました");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function save(uuid: string) {
+    try {
+      await saveToken(uuid);
+      alert("アカウントに保存しました（マイページで確認できます）");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "保存に失敗しました");
     }
   }
 
@@ -85,8 +97,29 @@ export function PublicAnniversaries() {
           entries.map((it) => (
             <div className="timeline-item" key={it.event.id}>
               <time>{it.event.date}</time>
-              <h3>{it.event.title}</h3>
+              <h3>
+                {it.event.uuid ? (
+                  <Link to={`/a/${it.event.uuid}`}>{it.event.title}</Link>
+                ) : (
+                  it.event.title
+                )}
+              </h3>
               {it.event.memo && <p className="muted">{it.event.memo}</p>}
+              {it.event.uuid && (
+                <div className="token-row">
+                  <Link className="detail-link" to={`/a/${it.event.uuid}`}>
+                    経過を見る →
+                  </Link>
+                  {session && (
+                    <button
+                      className="linklike"
+                      onClick={() => save(it.event.uuid)}
+                    >
+                      アカウントに保存
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ))
         )}

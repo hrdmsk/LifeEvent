@@ -3,6 +3,7 @@ import type { TimelineEntry } from "../types";
 import { getTimeline } from "../api";
 import { EventForm } from "./EventForm";
 import { Timeline } from "./Timeline";
+import { SavedTokens } from "./SavedTokens";
 
 // 個人タイムラインの中身（ログアウトは NavBar が担当）。
 export function Home({ userName }: { userName: string }) {
@@ -26,6 +27,7 @@ export function Home({ userName }: { userName: string }) {
       </header>
       <EventForm onAdded={reload} />
       <Timeline entries={entries} />
+      <SavedTokens />
     </div>
   );
 }

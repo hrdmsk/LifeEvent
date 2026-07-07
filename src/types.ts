@@ -1,5 +1,13 @@
+export type FontKey = "sans" | "serif" | "rounded" | "mono";
+
+export interface StyleConfig {
+  bg?: string;
+  font?: FontKey;
+}
+
 export interface LifeEvent {
   id: number;
+  uuid: string; // 記念日ごとの一意ID（将来のSBT Token IDの代替）
   userId: string;
   eventType: string;
   title: string;
@@ -8,6 +16,16 @@ export interface LifeEvent {
   recordId: number | null;
   status: string;
   createdAt: string;
+  style: StyleConfig | null;
+}
+
+export interface SavedToken {
+  uuid: string;
+  savedAt: string;
+  title: string;
+  date: string;
+  memo: string;
+  eventType: string;
 }
 
 export interface LedgerRecord {
