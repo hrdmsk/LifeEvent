@@ -22,6 +22,7 @@ export interface LifeEvent {
   title: string;
   memo: string;
   date: string;
+  time: string; // HH:MM（任意。未指定は ""）
   recordId: number | null;
   status: string;
   createdAt: string;
@@ -36,10 +37,16 @@ interface EventRow {
   title: string;
   memo: string;
   date: string;
+  time: string | null;
   record_id: number | null;
   status: string;
   created_at: string;
   style: string | null;
+}
+
+// HH:MM（24時間表記）のみ許可。空は「時刻なし」。
+export function isValidTime(t: string): boolean {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(t);
 }
 
 // 受け取った任意の値から、許可したキーだけの安全な StyleConfig を作る。
@@ -75,15 +82,26 @@ export class EventStore {
     title: string,
     memo: string,
     date: string,
+    time: string,
   ): Promise<LifeEvent> {
     const createdAt = new Date().toISOString();
     const uuid = crypto.randomUUID();
     const res = await this.db
       .prepare(
-        `INSERT INTO life_events (uuid, user_id, event_type, title, memo, date, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO life_events (uuid, user_id, event_type, title, memo, date, time, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .bind(uuid, userId, eventType, title, memo, date, StatusPending, createdAt)
+      .bind(
+        uuid,
+        userId,
+        eventType,
+        title,
+        memo,
+        date,
+        time || null,
+        StatusPending,
+        createdAt,
+      )
       .run();
     return {
       id: Number(res.meta.last_row_id),
@@ -93,6 +111,7 @@ export class EventStore {
       title,
       memo,
       date,
+      time,
       recordId: null,
       status: StatusPending,
       createdAt,
@@ -131,7 +150,7 @@ export class EventStore {
   async getByUuid(uuid: string): Promise<LifeEvent | null> {
     const row = await this.db
       .prepare(
-        `SELECT id, uuid, user_id, event_type, title, memo, date, record_id, status, created_at, style
+        `SELECT id, uuid, user_id, event_type, title, memo, date, time, record_id, status, created_at, style
          FROM life_events WHERE uuid = ?`,
       )
       .bind(uuid)
@@ -142,7 +161,7 @@ export class EventStore {
   async eventsByUser(userId: string): Promise<LifeEvent[]> {
     const { results } = await this.db
       .prepare(
-        `SELECT id, uuid, user_id, event_type, title, memo, date, record_id, status, created_at, style
+        `SELECT id, uuid, user_id, event_type, title, memo, date, time, record_id, status, created_at, style
          FROM life_events WHERE user_id = ? ORDER BY date, id`,
       )
       .bind(userId)
@@ -160,6 +179,7 @@ export function mapEvent(row: EventRow): LifeEvent {
     title: row.title,
     memo: row.memo,
     date: row.date,
+    time: row.time ?? "",
     recordId: row.record_id,
     status: row.status,
     createdAt: row.created_at,

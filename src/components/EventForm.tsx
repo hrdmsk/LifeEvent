@@ -4,6 +4,7 @@ import { addEvent } from "../api";
 
 export function EventForm({ onAdded }: { onAdded: () => void }) {
   const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [type, setType] = useState("other");
   const [title, setTitle] = useState("");
   const [memo, setMemo] = useState("");
@@ -14,7 +15,7 @@ export function EventForm({ onAdded }: { onAdded: () => void }) {
     if (!date || !title) return;
     setBusy(true);
     try {
-      await addEvent({ event_type: type, title, memo, date });
+      await addEvent({ event_type: type, title, memo, date, time });
       setTitle("");
       setMemo("");
       onAdded();
@@ -34,6 +35,15 @@ export function EventForm({ onAdded }: { onAdded: () => void }) {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="time">時刻（任意）</label>
+          <input
+            id="time"
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
           />
         </div>
         <div>

@@ -13,6 +13,7 @@ export interface LifeEvent {
   title: string;
   memo: string;
   date: string;
+  time: string; // HH:MM（任意。未指定は ""）
   recordId: number | null;
   status: string;
   createdAt: string;
@@ -24,6 +25,7 @@ export interface SavedToken {
   savedAt: string;
   title: string;
   date: string;
+  time: string;
   memo: string;
   eventType: string;
 }

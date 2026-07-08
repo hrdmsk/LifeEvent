@@ -67,7 +67,8 @@ export function AnniversaryPage() {
 
   const isOwner = !!session && session.user.id === ev.userId;
 
-  const target = new Date(`${ev.date}T00:00:00`).getTime();
+  // 時刻が登録されていればそれを基準に、なければその日の00:00を基準に経過を計算
+  const target = new Date(`${ev.date}T${ev.time || "00:00"}:00`).getTime();
   const diff = now - target;
   const past = diff >= 0;
   const total = Math.floor(Math.abs(diff) / 1000);
@@ -100,7 +101,10 @@ export function AnniversaryPage() {
   return (
     <div className="container">
       <div className="card anniversary-detail" style={cardStyle}>
-        <p className="muted">{ev.date}</p>
+        <p className="muted">
+          {ev.date}
+          {ev.time && ` ${ev.time}`}
+        </p>
         <h1>{ev.title}</h1>
         {ev.memo && <p className="muted">{ev.memo}</p>}
 

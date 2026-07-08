@@ -6,6 +6,7 @@ export interface SavedToken {
   savedAt: string;
   title: string;
   date: string;
+  time: string;
   memo: string;
   eventType: string;
 }
@@ -15,6 +16,7 @@ interface SavedRow {
   saved_at: string;
   title: string;
   date: string;
+  time: string | null;
   memo: string;
   event_type: string;
 }
@@ -54,7 +56,7 @@ export class TokenStore {
     const { results } = await this.db
       .prepare(
         `SELECT s.uuid AS uuid, s.saved_at AS saved_at,
-                e.title AS title, e.date AS date, e.memo AS memo, e.event_type AS event_type
+                e.title AS title, e.date AS date, e.time AS time, e.memo AS memo, e.event_type AS event_type
          FROM saved_tokens s
          JOIN life_events e ON e.uuid = s.uuid
          WHERE s.user_id = ?
@@ -67,6 +69,7 @@ export class TokenStore {
       savedAt: r.saved_at,
       title: r.title,
       date: r.date,
+      time: r.time ?? "",
       memo: r.memo,
       eventType: r.event_type,
     }));

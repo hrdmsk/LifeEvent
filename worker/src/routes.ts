@@ -1,7 +1,7 @@
 import type { Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { Service } from "./service";
-import { EventStore, sanitizeStyle } from "./users";
+import { EventStore, isValidTime, sanitizeStyle } from "./users";
 import { D1Ledger } from "./ledger";
 import { TokenStore } from "./tokens";
 import type { Env, Variables } from "./types";
@@ -62,9 +62,14 @@ export function registerRoutes(app: App): void {
       title?: string;
       memo?: string;
       date?: string;
+      time?: string;
     }>();
     if (!body.title || !body.date) {
       return c.json({ error: "title and date are required" }, 400);
+    }
+    const time = body.time ?? "";
+    if (time && !isValidTime(time)) {
+      return c.json({ error: "time must be HH:MM" }, 400);
     }
     const ev = await service(c.env).recordEvent(
       c.get("userId"),
@@ -72,6 +77,7 @@ export function registerRoutes(app: App): void {
       body.title,
       body.memo ?? "",
       body.date,
+      time,
     );
     return c.json(ev, 201);
   });
@@ -147,9 +153,14 @@ export function registerRoutes(app: App): void {
       title?: string;
       memo?: string;
       date?: string;
+      time?: string;
     }>();
     if (!body.title || !body.date) {
       return c.json({ error: "title and date are required" }, 400);
+    }
+    const time = body.time ?? "";
+    if (time && !isValidTime(time)) {
+      return c.json({ error: "time must be HH:MM" }, 400);
     }
 
     // IP単位のクールダウン（大事に登録してもらうための厳しめ制限）
@@ -179,6 +190,7 @@ export function registerRoutes(app: App): void {
       body.title,
       body.memo ?? "",
       body.date,
+      time,
     );
 
     // 記録成功後にクールダウンを更新（失敗時は消費しない）

@@ -17,7 +17,8 @@ export function NavBar() {
           LifeEvent
         </Link>
         <div className="nav-links">
-          <Link to="/">記念日</Link>
+          <Link to="/">登録</Link>
+          <Link to="/timeline">タイムライン</Link>
           {session ? (
             <>
               <Link to="/me">マイページ</Link>

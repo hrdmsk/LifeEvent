@@ -241,6 +241,31 @@ textarea {
   font-size: 0.9rem;
 }
 
+/* 登録内容の確認画面 */
+.confirm-list {
+  margin: 1rem 0;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.confirm-list > div {
+  display: flex;
+  gap: 1rem;
+  padding: 0.7rem 1rem;
+}
+.confirm-list > div + div {
+  border-top: 1px solid var(--border);
+}
+.confirm-list dt {
+  flex: 0 0 8rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.confirm-list dd {
+  margin: 0;
+  word-break: break-word;
+}
+
 /* 記念日 専用ページの経過表示 */
 .anniversary-detail h1 {
   margin: 0.25rem 0 0.5rem;

@@ -11,6 +11,7 @@ export async function addEvent(input: {
   title: string;
   memo: string;
   date: string;
+  time: string;
 }): Promise<LifeEvent> {
   const res = await fetch("/api/me/events", {
     method: "POST",
@@ -54,6 +55,7 @@ export async function addPublicAnniversary(input: {
   title: string;
   memo: string;
   date: string;
+  time: string;
 }): Promise<void> {
   const res = await fetch("/api/public/anniversaries", {
     method: "POST",

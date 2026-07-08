@@ -10,7 +10,10 @@ export function Timeline({ entries }: { entries: TimelineEntry[] }) {
       ) : (
         entries.map((it) => (
           <div className="timeline-item" key={it.event.id}>
-            <time>{it.event.date}</time>
+            <time>
+              {it.event.date}
+              {it.event.time && ` ${it.event.time}`}
+            </time>
             <h3>
               {it.event.title}
               {it.verified && <span className="badge">✓ 検証OK</span>}

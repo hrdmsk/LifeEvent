@@ -3,6 +3,7 @@ import { authClient } from "./authClient";
 import { NavBar } from "./components/NavBar";
 import { AnniversariesPage } from "./pages/AnniversariesPage";
 import { AnniversaryPage } from "./pages/AnniversaryPage";
+import { TimelinePage } from "./pages/TimelinePage";
 import { LoginPage } from "./pages/LoginPage";
 import { HomePage } from "./pages/HomePage";
 
@@ -20,6 +21,8 @@ export function App() {
         <Routes>
           {/* 記念日の登録ページ（公開・認証不要） */}
           <Route path="/" element={<AnniversariesPage />} />
+          {/* みんなの記念日タイムライン（閲覧・公開） */}
+          <Route path="/timeline" element={<TimelinePage />} />
           {/* 記念日の専用ページ（経過表示・公開） */}
           <Route path="/a/:uuid" element={<AnniversaryPage />} />
           {/* 認証ページ */}

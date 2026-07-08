@@ -25,6 +25,7 @@ export class Service {
     title: string,
     memo: string,
     date: string,
+    time: string,
   ): Promise<LifeEvent> {
     const ev = await this.events.createEvent(
       userId,
@@ -32,6 +33,7 @@ export class Service {
       title,
       memo,
       date,
+      time,
     );
     try {
       const record = await this.ledger.append(userId, date);
